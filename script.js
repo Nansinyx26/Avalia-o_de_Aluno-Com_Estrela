@@ -28,19 +28,27 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            const leitor = new FileReader();
-            leitor.onload = function(e) {
-                const aluno = {
-                    nome,
-                    foto: e.target.result,
-                    estrelas: [false, false, false, false, false],
-                    pontos: 0
-                };
-                salvarAluno(aluno, semanaId);
-                criarAluno(aluno, lista, semanaId);
-            };
+            if (foto && foto.size > 0) {
+                const leitor = new FileReader();
 
-            if (foto) {
+                leitor.onload = function(e) {
+                    redimensionarImagem(e.target.result, function(imagemReduzida) {
+                        const aluno = {
+                            nome,
+                            foto: imagemReduzida,
+                            estrelas: [false, false, false, false, false],
+                            pontos: 0
+                        };
+                        salvarAluno(aluno, semanaId);
+                        criarAluno(aluno, lista, semanaId);
+                    });
+                };
+
+                leitor.onerror = function(error) {
+                    console.error("Erro ao ler a imagem:", error);
+                    alert("Erro ao carregar a imagem. Tente outra foto.");
+                };
+
                 leitor.readAsDataURL(foto);
             } else {
                 const aluno = {
@@ -76,7 +84,7 @@ document.addEventListener('DOMContentLoaded', () => {
             atualizarPosicaoBotao();
         });
 
-        atualizarPosicaoBotao(); // Ajusta ao carregar a página
+        atualizarPosicaoBotao();
     }
 });
 
@@ -133,7 +141,6 @@ function criarAluno(aluno, container, semanaId) {
 }
 
 // LocalStorage: salvar, atualizar, remover, carregar
-
 function salvarAluno(aluno, semana) {
     const alunos = JSON.parse(localStorage.getItem(semana)) || [];
     alunos.push(aluno);
@@ -158,4 +165,44 @@ function removerAluno(alunoRemovido, semana) {
 function carregarAlunos(semana, container) {
     const alunos = JSON.parse(localStorage.getItem(semana)) || [];
     alunos.forEach(aluno => criarAluno(aluno, container, semana));
+}
+
+// Função para redimensionar imagens
+function redimensionarImagem(imagemOriginal, callback) {
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+
+    const MAX_WIDTH = 300;
+    const MAX_HEIGHT = 300;
+
+    const img = new Image();
+    img.onload = function() {
+        let width = img.width;
+        let height = img.height;
+
+        if (width > height) {
+            if (width > MAX_WIDTH) {
+                height *= MAX_WIDTH / width;
+                width = MAX_WIDTH;
+            }
+        } else {
+            if (height > MAX_HEIGHT) {
+                width *= MAX_HEIGHT / height;
+                height = MAX_HEIGHT;
+            }
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        ctx.drawImage(img, 0, 0, width, height);
+
+        const resizedDataUrl = canvas.toDataURL("image/jpeg", 0.7); // 70% qualidade
+        callback(resizedDataUrl);
+    };
+
+    img.onerror = function() {
+        alert("Erro ao processar a imagem.");
+    };
+
+    img.src = imagemOriginal;
 }
