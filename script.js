@@ -66,16 +66,11 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // Botão de toggle para mostrar/ocultar a sidebar
     const toggleBtn = document.getElementById('toggleSidebar');
     const sidebar = document.querySelector('.sidebar');
 
     function atualizarPosicaoBotao() {
-        if (sidebar.classList.contains('recolhida')) {
-            toggleBtn.style.left = '10px';
-        } else {
-            toggleBtn.style.left = '190px';
-        }
+        toggleBtn.style.left = sidebar.classList.contains('recolhida') ? '10px' : '190px';
     }
 
     if (toggleBtn && sidebar) {
@@ -144,7 +139,11 @@ function criarAluno(aluno, container, semanaId) {
 function salvarAluno(aluno, semana) {
     const alunos = JSON.parse(localStorage.getItem(semana)) || [];
     alunos.push(aluno);
-    localStorage.setItem(semana, JSON.stringify(alunos));
+    try {
+        localStorage.setItem(semana, JSON.stringify(alunos));
+    } catch (e) {
+        alert("Espaço esgotado! Remova alunos antigos ou reduza a qualidade das fotos.");
+    }
 }
 
 function atualizarAluno(alunoAtualizado, semana) {
@@ -167,13 +166,13 @@ function carregarAlunos(semana, container) {
     alunos.forEach(aluno => criarAluno(aluno, container, semana));
 }
 
-// Função para redimensionar imagens
+// Redimensionar imagem para 120x120 com qualidade 20%
 function redimensionarImagem(imagemOriginal, callback) {
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
 
-    const MAX_WIDTH = 300;
-    const MAX_HEIGHT = 300;
+    const MAX_WIDTH = 120;
+    const MAX_HEIGHT = 120;
 
     const img = new Image();
     img.onload = function() {
@@ -196,7 +195,7 @@ function redimensionarImagem(imagemOriginal, callback) {
         canvas.height = height;
         ctx.drawImage(img, 0, 0, width, height);
 
-        const resizedDataUrl = canvas.toDataURL("image/jpeg", 0.7); // 70% qualidade
+        const resizedDataUrl = canvas.toDataURL("image/jpeg", 0.2);
         callback(resizedDataUrl);
     };
 
