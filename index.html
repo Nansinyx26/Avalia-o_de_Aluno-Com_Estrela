@@ -1,24 +1,124 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Sistema de Avaliação</title>
-  <link rel="stylesheet" href="styles.css">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Sistema de Avaliação</title>
+    <link rel="stylesheet" href="styles.css" />
 </head>
+
 <body>
+    <!-- Botão para recolher/expandir a sidebar -->
+    <button id="toggleSidebar" class="toggle-btn">☰</button>
 
-  <h1>Avaliação dos Alunos</h1>
+    <div class="container">
+        <aside class="sidebar">
+            <h2>Semanas</h2>
+            <div class="semana-lista">
+                <button class="tab-btn" data-semana="semana1">Semana 1</button>
+                <button class="tab-btn" data-semana="semana2">Semana 2</button>
+                <button class="tab-btn" data-semana="semana3">Semana 3</button>
+                <button class="tab-btn" data-semana="semana4">Semana 4</button>
+                <button class="tab-btn" data-semana="semana5">Semana 5</button>
+                <button class="tab-btn" data-semana="semana6">Semana 6</button>
+                <button class="tab-btn" data-semana="semana7">Semana 7</button>
+                <button class="tab-btn" data-semana="semana8">Semana 8</button>
+            </div>
+        </aside>
 
-  <div class="form">
-    <input type="text" id="nome" placeholder="Nome do aluno">
-    <input type="file" id="foto" accept="image/*">
-    <button onclick="adicionarAluno()">Adicionar</button>
-  </div>
+        <main class="conteudo">
+            <!-- Semana 1 -->
+            <div id="semana1" class="semana-content active">
+                <h1>Avaliação dos Alunos - Semana 1</h1>
+                <div class="form">
+                    <input type="text" class="nome" placeholder="Nome do aluno" />
+                    <input type="file" class="foto" accept="image/*" />
+                    <button class="adicionar">Adicionar</button>
+                </div>
+                <div class="lista-alunos"></div>
+            </div>
 
-  <div id="lista-alunos"></div>
+            <!-- Semana 2 -->
+            <div id="semana2" class="semana-content">
+                <h1>Avaliação dos Alunos - Semana 2</h1>
+                <div class="form">
+                    <input type="text" class="nome" placeholder="Nome do aluno" />
+                    <input type="file" class="foto" accept="image/*" />
+                    <button class="adicionar">Adicionar</button>
+                </div>
+                <div class="lista-alunos"></div>
+            </div>
 
-  <script src="script.js"></script>
+            <!-- Semana 3 -->
+            <div id="semana3" class="semana-content">
+                <h1>Avaliação dos Alunos - Semana 3</h1>
+                <div class="form">
+                    <input type="text" class="nome" placeholder="Nome do aluno" />
+                    <input type="file" class="foto" accept="image/*" />
+                    <button class="adicionar">Adicionar</button>
+                </div>
+                <div class="lista-alunos"></div>
+            </div>
 
+            <!-- Semana 4 -->
+            <div id="semana4" class="semana-content">
+                <h1>Avaliação dos Alunos - Semana 4</h1>
+                <div class="form">
+                    <input type="text" class="nome" placeholder="Nome do aluno" />
+                    <input type="file" class="foto" accept="image/*" />
+                    <button class="adicionar">Adicionar</button>
+                </div>
+                <div class="lista-alunos"></div>
+            </div>
+
+            <!-- Semana 5 -->
+            <div id="semana5" class="semana-content">
+                <h1>Avaliação dos Alunos - Semana 5</h1>
+                <div class="form">
+                    <input type="text" class="nome" placeholder="Nome do aluno" />
+                    <input type="file" class="foto" accept="image/*" />
+                    <button class="adicionar">Adicionar</button>
+                </div>
+                <div class="lista-alunos"></div>
+            </div>
+
+            <!-- Semana 6 -->
+            <div id="semana6" class="semana-content">
+                <h1>Avaliação dos Alunos - Semana 6</h1>
+                <div class="form">
+                    <input type="text" class="nome" placeholder="Nome do aluno" />
+                    <input type="file" class="foto" accept="image/*" />
+                    <button class="adicionar">Adicionar</button>
+                </div>
+                <div class="lista-alunos"></div>
+            </div>
+
+            <!-- Semana 7 -->
+            <div id="semana7" class="semana-content">
+                <h1>Avaliação dos Alunos - Semana 7</h1>
+                <div class="form">
+                    <input type="text" class="nome" placeholder="Nome do aluno" />
+                    <input type="file" class="foto" accept="image/*" />
+                    <button class="adicionar">Adicionar</button>
+                </div>
+                <div class="lista-alunos"></div>
+            </div>
+
+            <!-- Semana 8 -->
+            <div id="semana8" class="semana-content">
+                <h1>Avaliação dos Alunos - Semana 8</h1>
+                <div class="form">
+                    <input type="text" class="nome" placeholder="Nome do aluno" />
+                    <input type="file" class="foto" accept="image/*" />
+                    <button class="adicionar">Adicionar</button>
+                </div>
+                <div class="lista-alunos"></div>
+            </div>
+        </main>
+    </div>
+
+    <script src="script.js"></script>
 </body>
+
 </html>
