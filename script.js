@@ -2,6 +2,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const botoes = document.querySelectorAll('.tab-btn');
     const semanas = document.querySelectorAll('.semana-content');
 
+    abrirDB();
+
     botoes.forEach(botao => {
         botao.addEventListener('click', () => {
             const id = botao.dataset.semana;
@@ -28,37 +30,24 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            if (foto && foto.size > 0) {
-                const leitor = new FileReader();
-
-                leitor.onload = function(e) {
-                    redimensionarImagem(e.target.result, function(imagemReduzida) {
-                        const aluno = {
-                            nome,
-                            foto: imagemReduzida,
-                            estrelas: [false, false, false, false, false],
-                            pontos: 0
-                        };
-                        salvarAluno(aluno, semanaId);
-                        criarAluno(aluno, lista, semanaId);
-                    });
-                };
-
-                leitor.onerror = function(error) {
-                    console.error("Erro ao ler a imagem:", error);
-                    alert("Erro ao carregar a imagem. Tente outra foto.");
-                };
-
-                leitor.readAsDataURL(foto);
-            } else {
+            const adicionarAluno = (imagemReduzida) => {
                 const aluno = {
+                    id: Date.now(),
                     nome,
-                    foto: 'https://via.placeholder.com/50',
+                    foto: imagemReduzida || 'https://via.placeholder.com/50',
                     estrelas: [false, false, false, false, false],
                     pontos: 0
                 };
-                salvarAluno(aluno, semanaId);
-                criarAluno(aluno, lista, semanaId);
+                salvarAluno(aluno, semanaId, () => criarAluno(aluno, lista, semanaId));
+            };
+
+            if (foto && foto.size > 0) {
+                const leitor = new FileReader();
+                leitor.onload = (e) => redimensionarImagem(e.target.result, adicionarAluno);
+                leitor.onerror = () => alert("Erro ao ler a imagem. Tente outra foto.");
+                leitor.readAsDataURL(foto);
+            } else {
+                adicionarAluno();
             }
 
             inputNome.value = '';
@@ -83,7 +72,64 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-// Criação de aluno
+// IndexedDB
+
+let db = null;
+
+function abrirDB() {
+    const request = indexedDB.open("avaliacaoAlunosDB", 1);
+
+    request.onupgradeneeded = (e) => {
+        db = e.target.result;
+        for (let i = 1; i <= 8; i++) {
+            const semana = `semana${i}`;
+            if (!db.objectStoreNames.contains(semana)) {
+                db.createObjectStore(semana, { keyPath: 'id' });
+            }
+        }
+    };
+
+    request.onsuccess = (e) => db = e.target.result;
+    request.onerror = () => alert("Erro ao abrir o banco de dados.");
+}
+
+function salvarAluno(aluno, semana, callback) {
+    const tx = db.transaction(semana, "readwrite");
+    const store = tx.objectStore(semana);
+    store.add(aluno).onsuccess = () => callback && callback();
+}
+
+function atualizarAluno(alunoAtualizado, semana) {
+    const tx = db.transaction(semana, "readwrite");
+    const store = tx.objectStore(semana);
+    store.put(alunoAtualizado);
+}
+
+function removerAluno(aluno, semana) {
+    const tx = db.transaction(semana, "readwrite");
+    const store = tx.objectStore(semana);
+    store.delete(aluno.id);
+}
+
+function carregarAlunos(semana, container) {
+    const tx = indexedDB.open("avaliacaoAlunosDB", 1);
+    tx.onsuccess = (e) => {
+        const db = e.target.result;
+        const store = db.transaction(semana, "readonly").objectStore(semana);
+        const request = store.openCursor();
+
+        request.onsuccess = (event) => {
+            const cursor = event.target.result;
+            if (cursor) {
+                criarAluno(cursor.value, container, semana);
+                cursor.continue();
+            }
+        };
+    };
+}
+
+// UI
+
 function criarAluno(aluno, container, semanaId) {
     const alunoDiv = document.createElement('div');
     alunoDiv.className = 'aluno';
@@ -135,38 +181,7 @@ function criarAluno(aluno, container, semanaId) {
     container.appendChild(alunoDiv);
 }
 
-// LocalStorage: salvar, atualizar, remover, carregar
-function salvarAluno(aluno, semana) {
-    const alunos = JSON.parse(localStorage.getItem(semana)) || [];
-    alunos.push(aluno);
-    try {
-        localStorage.setItem(semana, JSON.stringify(alunos));
-    } catch (e) {
-        alert("Espaço esgotado! Remova alunos antigos ou reduza a qualidade das fotos.");
-    }
-}
-
-function atualizarAluno(alunoAtualizado, semana) {
-    const alunos = JSON.parse(localStorage.getItem(semana)) || [];
-    const index = alunos.findIndex(a => a.nome === alunoAtualizado.nome);
-    if (index > -1) {
-        alunos[index] = alunoAtualizado;
-        localStorage.setItem(semana, JSON.stringify(alunos));
-    }
-}
-
-function removerAluno(alunoRemovido, semana) {
-    const alunos = JSON.parse(localStorage.getItem(semana)) || [];
-    const novosAlunos = alunos.filter(a => a.nome !== alunoRemovido.nome);
-    localStorage.setItem(semana, JSON.stringify(novosAlunos));
-}
-
-function carregarAlunos(semana, container) {
-    const alunos = JSON.parse(localStorage.getItem(semana)) || [];
-    alunos.forEach(aluno => criarAluno(aluno, container, semana));
-}
-
-// Redimensionar imagem para 120x120 com qualidade 20%
+// Reduz imagem
 function redimensionarImagem(imagemOriginal, callback) {
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
@@ -195,7 +210,7 @@ function redimensionarImagem(imagemOriginal, callback) {
         canvas.height = height;
         ctx.drawImage(img, 0, 0, width, height);
 
-        const resizedDataUrl = canvas.toDataURL("image/jpeg", 0.2);
+        const resizedDataUrl = canvas.toDataURL("image/jpeg", 0.5); // qualidade melhor
         callback(resizedDataUrl);
     };
 
