@@ -93,10 +93,29 @@ function abrirDB() {
     request.onerror = () => alert("Erro ao abrir o banco de dados.");
 }
 
+// Função modificada com tratamento de limite de espaço
 function salvarAluno(aluno, semana, callback) {
-    const tx = db.transaction(semana, "readwrite");
-    const store = tx.objectStore(semana);
-    store.add(aluno).onsuccess = () => callback && callback();
+    try {
+        const tx = db.transaction(semana, "readwrite");
+        const store = tx.objectStore(semana);
+        const request = store.add(aluno);
+
+        request.onsuccess = () => callback && callback();
+
+        request.onerror = (event) => {
+            if (event.target.error.name === 'QuotaExceededError') {
+                alert("Espaço de armazenamento esgotado! Não é possível adicionar mais fotos.");
+            } else {
+                alert("Erro ao salvar aluno: " + event.target.error.message);
+            }
+        };
+    } catch (err) {
+        if (err.name === 'QuotaExceededError') {
+            alert("Espaço de armazenamento esgotado! Não é possível adicionar mais fotos.");
+        } else {
+            alert("Erro ao salvar aluno: " + err.message);
+        }
+    }
 }
 
 function atualizarAluno(alunoAtualizado, semana) {
@@ -190,7 +209,7 @@ function redimensionarImagem(imagemOriginal, callback) {
     const MAX_HEIGHT = 120;
 
     const img = new Image();
-    img.onload = function() {
+    img.onload = function () {
         let width = img.width;
         let height = img.height;
 
@@ -214,7 +233,7 @@ function redimensionarImagem(imagemOriginal, callback) {
         callback(resizedDataUrl);
     };
 
-    img.onerror = function() {
+    img.onerror = function () {
         alert("Erro ao processar a imagem.");
     };
 
